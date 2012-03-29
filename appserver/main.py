@@ -1,15 +1,20 @@
 import webapp2
+from interface import write_boolean
 from insert import Insert
+from check import Check
+from find import Find
+from remove import Remove
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
-    self.response.headers['Content-Type'] = 'text/json'
-    self.response.out.write('{"type":"boolean", "value":"true"}')
+    write_boolean(self, True)
 
 app = webapp2.WSGIApplication(
             [
               ('/', MainPage),
-              ('/insert', Insert)
+              ('/insert', Insert),
+              ('/check', Check),
+              ('/find', Find),
+              ('/remove', Remove)
             ],
-            debug=True
-      )
+            debug=True)
