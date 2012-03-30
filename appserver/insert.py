@@ -2,6 +2,7 @@ from __future__ import with_statement
 from google.appengine.api import files
 import webapp2
 from models import DataFile
+from interface import write_boolean
 
 class Insert(webapp2.RequestHandler):
   def get(self):
@@ -22,5 +23,4 @@ class Insert(webapp2.RequestHandler):
       #f.write(value)
     #files.finalize(writable_file_name)
 
-    self.response.headers['Content-Type'] = 'text/json'
-    self.response.out.write('{"type":"boolean", "value":"true"}')
+    write_boolean(True)
