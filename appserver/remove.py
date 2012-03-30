@@ -1,5 +1,6 @@
+from __future__ import with_statement
+from google.appengine.api import files
 import webapp2
-from models import DataFile
 from interface import write_boolean
 
 class Remove(webapp2.RequestHandler):
@@ -9,10 +10,10 @@ class Remove(webapp2.RequestHandler):
   def post(self):
     key = self.request.get('key')
 
-    query = DataFile.all().filter('key =', key)
-    data_file = query.get()
-    if data_file is None:
-      write_boolean(False)
-    else:
-      data_file.delete()
-      write_boolean(True)
+    filename = '/gs/save-files/' + key
+
+    try:
+      with files.open(filename, 'r') as f:
+        write_boolean(self, True)
+    except files.ExistenceError:
+      write_boolean(self, False)
