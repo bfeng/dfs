@@ -1,15 +1,16 @@
 import webapp2
+from interface import write_json
 from models import DataFile
 
-class Insert(webapp2.RequestHandler):
+class Listing(webapp2.RequestHandler):
   def get(self):
     self.post()
 
   def post(self):
-    key = self.request.get('key')
-    value = self.request.get('value')
+    data_files = DataFile.all()
 
-    data_file = DataFile(f_key=key, f_value=value)
-    data_file.put()
-    self.response.headers['Content-Type'] = 'text/json'
-    self.response.out.write('{"type":"boolean", "value":"true"}')
+    result = {"type":"array", "value":[]}
+    for data_file in data_files:
+      result["value"].append(data_file.f_key)
+
+    write_json(self, result)

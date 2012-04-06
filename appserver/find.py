@@ -1,3 +1,5 @@
+from google.appengine.ext import blobstore
+import urllib
 import webapp2
 from models import DataFile
 from interface import write_string
@@ -8,13 +10,14 @@ class Find(webapp2.RequestHandler):
     self.post()
 
   def post(self):
-    key = self.request.get('key')
+    key = urllib.unquote(self.request.get('key'))
 
-    query = DataFile.all().filter('key =', key)
+    query = DataFile.all().filter('f_key =', key)
 
     data_file = query.get()
 
     if data_file:
-      write_string(data_file.value)
+      blob_reader = blobstore.BlobReader(data_file.f_value)
+      write_string(self, blob_reader.read())
     else:
-      write_boolean(False)
+      write_boolean(self, False)
