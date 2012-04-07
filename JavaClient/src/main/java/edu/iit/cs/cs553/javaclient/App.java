@@ -1,66 +1,58 @@
 package edu.iit.cs.cs553.javaclient;
 
-import java.io.IOException;
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-
 /**
  * A Simple Java client of App on Google App Engine.
  *
  */
 public class App {
-
-    static HttpClient client = new HttpClient();
-    static String baseUrl = "http://save-files.appspot.com";
+    //static String baseUrl = "http://save-files.appspot.com";
+    static String baseUrl = "http://localhost:8080";
 
     public static boolean testConnection() {
-        GetMethod httpget = new GetMethod(baseUrl + "/");
+        AppInterface ai = new JavaDelegator(baseUrl);
 
-        httpget.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
-                new DefaultHttpMethodRetryHandler(3, false));
-
-        try {
-            int statusCode = client.executeMethod(httpget);
-
-            if (statusCode != HttpStatus.SC_OK) {
-                System.err.println("Connection failed: " + httpget.getStatusLine());
-            }
-
-            // Read the response body.
-            String responseBody = httpget.getResponseBodyAsString();
-
-            // Deal with the response.
-            // Use caution: ensure correct character encoding and is not binary data
-            System.out.println(responseBody);
-
-            return true;
-        }
-        catch (HttpException e) {
-            System.err.println("Fatal protocol violation: " + e.getMessage());
-            return false;
-        }
-        catch (IOException e) {
-            System.err.println("Fatal transport error: " + e.getMessage());
-            return false;
-        }
-        finally {
-            // Release the connection.
-            httpget.releaseConnection();
-        }
+        return ai.connect();
     }
-    
+
     public static boolean testInsert() {
-        AppInterface ai = new JavaDelegator();
-        
+        AppInterface ai = new JavaDelegator(baseUrl);
+
         return ai.insert("foo", "bar");
     }
 
+    public static boolean testCheck() {
+        AppInterface ai = new JavaDelegator(baseUrl);
+
+        boolean stage1 = ai.insert("foo", "bar") == ai.check("foo");
+        
+        boolean stage2 = ai.check("bar");
+        
+        if(stage1==true && stage2 == false)
+            return true;
+        else
+            return false;
+    }
+
+    public static boolean testRemove() {
+        AppInterface ai = new JavaDelegator(baseUrl);
+
+        boolean stage1 = ai.insert("foo", "bar") == ai.check("foo");
+
+        boolean stage2 = ai.remove("foo");
+
+        boolean stage3 = ai.check("foo");
+
+        if (stage1 == true && stage2 == true && stage3 == false) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public static void main(String[] args) {
-        System.out.println("Connection: " + (testConnection()?"OK":"Failed"));
-        System.out.println("Insert: " + (testInsert()?"OK":"Failed"));
+        System.out.println("Connection: " + ( testConnection() ? "OK" : "Failed" ));
+        System.out.println("Insert: " + ( testInsert() ? "OK" : "Failed" ));
+        System.out.println("Check: " + ( testCheck() ? "OK" : "Failed" ));
+        System.out.println("Remove: " + ( testRemove() ? "OK" : "Failed" ));
     }
 }

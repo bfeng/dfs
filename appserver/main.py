@@ -10,6 +10,9 @@ class MainPage(webapp2.RequestHandler):
   def get(self):
     write_boolean(self, True)
 
+  def post(self):
+    self.get()
+
 app = webapp2.WSGIApplication(
             [
               ('/', MainPage),

@@ -13,8 +13,15 @@ class Insert(webapp2.RequestHandler):
     key = self.request.get('key')
     value = self.request.get('value')
 
-    # Create a file
     filename = urllib.unquote(key)
+
+    # Clean up current file
+    query = DataFile.all().filter("f_key", filename)
+
+    for data_file in query:
+      data_file.delete()
+
+    # Create a file
     writable_file_name = files.blobstore.create(mime_type='application/octect-stream')
 
     with files.open(writable_file_name, 'a') as f:

@@ -5,6 +5,8 @@ package edu.iit.cs.cs553.javaclient;
  * @author Bo Feng
  */
 public interface AppInterface {
+    
+    Boolean connect();
 
     Boolean insert(String key, String value);
 
@@ -13,4 +15,6 @@ public interface AppInterface {
     String find(String key);
     
     Boolean remove(String key);
+    
+    String[] listing();
 }
