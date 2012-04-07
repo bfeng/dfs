@@ -4,6 +4,7 @@ from insert import Insert
 from check import Check
 from find import Find
 from remove import Remove
+from listing import Listing
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
@@ -15,6 +16,7 @@ app = webapp2.WSGIApplication(
               ('/insert', Insert),
               ('/check', Check),
               ('/find', Find),
-              ('/remove', Remove)
+              ('/remove', Remove),
+              ('/listing', Listing)
             ],
             debug=True)

@@ -1,6 +1,7 @@
-from __future__ import with_statement
-from google.appengine.api import files
+from google.appengine.ext import blobstore
+import urllib
 import webapp2
+from models import DataFile
 from interface import write_string
 from interface import write_boolean
 
@@ -9,18 +10,14 @@ class Find(webapp2.RequestHandler):
     self.post()
 
   def post(self):
-    key = self.request.get('key')
+    key = urllib.unquote(self.request.get('key'))
 
-    filename = '/gs/save-files/' + key
+    query = DataFile.all().filter('f_key =', key)
 
-    with files.open(filename, 'r') as f:
-      value = ""
-      data = f.read(64)
-      value = data
-      while data != "":
-        data = f.read(64)
-        value = value + data
-      write_string(self, value)
-      return
+    data_file = query.get()
 
-    write_boolean(self, False)
+    if data_file:
+      blob_reader = blobstore.BlobReader(data_file.f_value)
+      write_string(self, blob_reader.read())
+    else:
+      write_boolean(self, False)

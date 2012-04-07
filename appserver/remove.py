@@ -1,6 +1,7 @@
-from __future__ import with_statement
-from google.appengine.api import files
+import urllib
 import webapp2
+from google.appengine.ext import blobstore
+from models import DataFile
 from interface import write_boolean
 
 class Remove(webapp2.RequestHandler):
@@ -8,12 +9,13 @@ class Remove(webapp2.RequestHandler):
     self.post()
 
   def post(self):
-    key = self.request.get('key')
+    key = urllib.unquote(self.request.get('key'))
 
-    filename = '/gs/save-files/' + key
-
-    try:
-      with files.open(filename, 'r') as f:
-        write_boolean(self, True)
-    except files.ExistenceError:
+    query = DataFile.all().filter('f_key =', key)
+    data_file = query.get()
+    if data_file is None:
       write_boolean(self, False)
+    else:
+      data_file.f_value.delete()
+      data_file.delete()
+      write_boolean(self, True)
