@@ -1,6 +1,9 @@
 package edu.iit.cs.cs553.javaclient;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -28,6 +31,11 @@ public class JavaDelegator implements AppInterface {
         protected Object value;
 
         public Result() {
+        }
+
+        private Result(String type, boolean b) {
+            this.type = type;
+            this.value = b;
         }
     }
 
@@ -62,12 +70,19 @@ public class JavaDelegator implements AppInterface {
         try {
             int statusCode = client.executeMethod(httppost);
 
-            if (statusCode != HttpStatus.SC_OK) {
-                logger.log(Level.WARNING, "Connection failed: {0}", httppost.getStatusLine());
+            if (statusCode == HttpStatus.SC_OK) {
+                Reader r = new InputStreamReader(httppost.getResponseBodyAsStream());
+                try {
+                    return new Gson().fromJson(r, Result.class);
+                } catch (JsonSyntaxException jsonSyntaxException) {
+                    logger.log(Level.SEVERE, "Fatal result violation: {0}", jsonSyntaxException.getMessage());
+                    BufferedReader br = new BufferedReader(r);
+                    logger.log(Level.SEVERE, "Result violation: first line: {0}", br.readLine());
+                    br.close();
+                }
+            } else {
+                logger.log(Level.SEVERE, "Connection failed: {0}", httppost.getStatusLine());
             }
-
-            Reader r = new InputStreamReader(httppost.getResponseBodyAsStream());
-            return new Gson().fromJson(r, Result.class);
         } catch (HttpException e) {
             logger.log(Level.SEVERE, "Fatal protocol violation: {0}", e.getMessage());
         } catch (IOException e) {
@@ -76,12 +91,23 @@ public class JavaDelegator implements AppInterface {
             // Release the connection.
             httppost.releaseConnection();
         }
-        return null;
+        return new Result("boolean", false);
     }
 
     @Override
     public Boolean connect() {
         return (Boolean) rpc(null, null).value;
+    }
+
+    @Override
+    public Boolean cache(boolean turn) {
+        Map<String, String> parameters = new HashMap<String, String>();
+        if (turn) {
+            parameters.put("turn", "on");
+        } else {
+            parameters.put("turn", "off");
+        }
+        return (Boolean) rpc("cache", parameters).value;
     }
 
     @Override

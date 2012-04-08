@@ -7,6 +7,8 @@ package edu.iit.cs.cs553.javaclient;
 public interface AppInterface {
     
     Boolean connect();
+    
+    Boolean cache(boolean turn);
 
     Boolean insert(String key, String value);
 
