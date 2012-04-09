@@ -5,6 +5,7 @@ from check import Check
 from find import Find
 from remove import Remove
 from listing import Listing
+from memcache import Memcache
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
@@ -20,6 +21,7 @@ app = webapp2.WSGIApplication(
               ('/check', Check),
               ('/find', Find),
               ('/remove', Remove),
-              ('/listing', Listing)
+              ('/listing', Listing),
+              ('/memcache', Memcache)
             ],
             debug=True)

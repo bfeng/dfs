@@ -1,3 +1,4 @@
+from google.appengine.api import memcache
 from google.appengine.ext import blobstore
 import urllib
 import webapp2
@@ -11,6 +12,12 @@ class Find(webapp2.RequestHandler):
 
   def post(self):
     key = urllib.unquote(self.request.get('key'))
+
+    if memcache.get(key="turn") == 'on':
+      data = memcache.get(key)
+      if data is not None:
+        write_string(self, data)
+        return
 
     query = DataFile.all().filter('f_key =', key)
 

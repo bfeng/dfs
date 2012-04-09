@@ -1,5 +1,7 @@
 from __future__ import with_statement
 from google.appengine.api import files
+from google.appengine.api import memcache
+from google.appengine.ext.blobstore import BlobInfo
 import urllib
 import webapp2
 from models import DataFile
@@ -32,5 +34,9 @@ class Insert(webapp2.RequestHandler):
 
     data_file = DataFile(f_key = filename, f_value = blob_key)
     data_file.put()
+
+    if memcache.get(key="turn") == 'on':
+      if BlobInfo.get(blob_key).size <= 100000:
+        memcache.set(key=filename, value=value, time=3600)
 
     write_boolean(self, True)
