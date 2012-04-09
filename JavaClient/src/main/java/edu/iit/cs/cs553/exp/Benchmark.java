@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  */
 public class Benchmark {
 
-    private static final String baseUrl = "http://localhost:8080";
+    private static final String baseUrl = "http://save-files.appspot.com";
 
     private enum Operation {
 
