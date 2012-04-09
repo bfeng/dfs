@@ -50,7 +50,7 @@ public class WorkloadGenerator {
     }
 
     public static void main(String[] args) throws IOException {
-        if(args.length<6)
+        if(args.length!=7)
             throw new IllegalArgumentException();
 
         int _1K_counter = Integer.valueOf(args[0]);
