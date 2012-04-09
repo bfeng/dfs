@@ -50,14 +50,17 @@ public class WorkloadGenerator {
     }
 
     public static void main(String[] args) throws IOException {
-        int _1K_counter = 10;
-        int _10K_counter = 10;
-        int _100K_counter = 10;
-        int _1M_counter = 10;
-        int _10M_counter = 10;
-        int _100M_counter = 1;
+        if(args.length<6)
+            throw new IllegalArgumentException();
 
-        File file = new File("workload.index");
+        int _1K_counter = Integer.valueOf(args[0]);
+        int _10K_counter = Integer.valueOf(args[1]);
+        int _100K_counter = Integer.valueOf(args[2]);
+        int _1M_counter = Integer.valueOf(args[3]);
+        int _10M_counter = Integer.valueOf(args[4]);
+        int _100M_counter = Integer.valueOf(args[5]);
+        File file = new File(args[6]);
+        
         FileWriter fw = new FileWriter(file);
         BufferedWriter bw = new BufferedWriter(fw);
 
