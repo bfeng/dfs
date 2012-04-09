@@ -8,7 +8,7 @@ public interface AppInterface {
     
     Boolean connect();
     
-    Boolean cache(boolean turn);
+    Boolean memcache(boolean turn);
 
     Boolean insert(String key, String value);
 

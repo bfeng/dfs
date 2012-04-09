@@ -5,8 +5,7 @@ package edu.iit.cs.cs553.javaclient;
  *
  */
 public class App {
-    //static String baseUrl = "http://save-files.appspot.com";
-    static String baseUrl = "http://localhost:8080";
+    static String baseUrl = "http://save-files.appspot.com";
 
     public static boolean testConnection() {
         AppInterface ai = new JavaDelegator(baseUrl);

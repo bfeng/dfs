@@ -1,7 +1,6 @@
 package edu.iit.cs.cs553.javaclient;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -100,14 +99,14 @@ public class JavaDelegator implements AppInterface {
     }
 
     @Override
-    public Boolean cache(boolean turn) {
+    public Boolean memcache(boolean turn) {
         Map<String, String> parameters = new HashMap<String, String>();
         if (turn) {
             parameters.put("turn", "on");
         } else {
             parameters.put("turn", "off");
         }
-        return (Boolean) rpc("cache", parameters).value;
+        return (Boolean) rpc("memcache", parameters).value;
     }
 
     @Override
