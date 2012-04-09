@@ -125,7 +125,7 @@ public class Benchmark {
             } else if (what.equals(Operation.FIND)) {
                 pool.submit(new FindTask(line));
             } else if (what.equals(Operation.REMOVE)) {
-                pool.submit(null);
+                pool.submit(new RemoveTask(line));
             }
             total++;
         }
