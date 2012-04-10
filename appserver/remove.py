@@ -16,6 +16,7 @@ class Remove(webapp2.RequestHandler):
     if data_file is None:
       write_boolean(self, False)
     else:
-      data_file.f_value.delete()
+      if data_file.f_value:
+          data_file.f_value.delete()
       data_file.delete()
       write_boolean(self, True)

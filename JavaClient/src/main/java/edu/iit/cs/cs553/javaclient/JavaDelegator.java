@@ -2,17 +2,21 @@ package edu.iit.cs.cs553.javaclient;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 /**
  *
@@ -20,7 +24,7 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
  */
 public class JavaDelegator implements AppInterface {
 
-    private HttpClient client = new HttpClient();
+    private HttpClient client = new DefaultHttpClient();
     private String baseUrl = "http://save-files.appspot.com";
     private final static Logger logger = Logger.getLogger(JavaDelegator.class.getCanonicalName());
 
@@ -49,46 +53,42 @@ public class JavaDelegator implements AppInterface {
         if (!method.startsWith("/")) {
             method = "/" + method;
         }
-        PostMethod httppost = new PostMethod(baseUrl + method);
-
-        httppost.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
-                new DefaultHttpMethodRetryHandler(3, false));
+        HttpPost httppost = new HttpPost(baseUrl + method);
 
         if (parameters != null && !parameters.isEmpty()) {
-            NameValuePair[] data = new NameValuePair[parameters.size()];
+            List<NameValuePair> pairs = new ArrayList<NameValuePair>(1);
 
-            int i = 0;
             for (String key : parameters.keySet()) {
-                data[i] = new NameValuePair(key, parameters.get(key));
-                i++;
+                pairs.add(new BasicNameValuePair(key, parameters.get(key)));
             }
-
-            httppost.setRequestBody(data);
+            try {
+                httppost.setEntity(new UrlEncodedFormEntity(pairs));
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(JavaDelegator.class.getName()).log(Level.WARNING, null, ex);
+            }
         }
-
+        
         try {
-            int statusCode = client.executeMethod(httppost);
+            HttpResponse response = client.execute(httppost);
+            HttpEntity entity = response.getEntity();
 
-            if (statusCode == HttpStatus.SC_OK) {
-                Reader r = new InputStreamReader(httppost.getResponseBodyAsStream());
+            if (entity != null) {
+                InputStream instream = entity.getContent();
+                BufferedReader br = new BufferedReader(new InputStreamReader(instream));
                 try {
-                    return new Gson().fromJson(r, Result.class);
+                    return new Gson().fromJson(br, Result.class);
                 } catch (JsonSyntaxException jsonSyntaxException) {
                     logger.log(Level.SEVERE, "Fatal result violation: {0}", jsonSyntaxException.getMessage());
-                    BufferedReader br = new BufferedReader(r);
                     logger.log(Level.SEVERE, "Result violation: first line: {0}", br.readLine());
-                    br.close();
+                } finally {
+                    // Closing the input stream will trigger connection release
+                    instream.close();
                 }
             } else {
-                logger.log(Level.SEVERE, "Connection failed: {0}", httppost.getStatusLine());
+                logger.log(Level.SEVERE, "Connection failed: {0}", response.getStatusLine());
             }
-        } catch (HttpException e) {
-            logger.log(Level.SEVERE, "Fatal protocol violation: {0}", e.getMessage());
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Fatal transport error: {0}", e.getMessage());
-        } finally {
-            // Release the connection.
-            httppost.releaseConnection();
         }
         return new Result("boolean", false);
     }
@@ -109,6 +109,26 @@ public class JavaDelegator implements AppInterface {
         return (Boolean) rpc("memcache", parameters).value;
     }
 
+//    public Boolean upload(String filename) {
+//        HttpClient httpclient = new HttpClient();
+//        PostMethod httppost = new PostMethod(baseUrl + "/upload");
+//        File file = new File(filename);
+//
+//        FileEntity entiry = new FileEntity(file, "text/plain; charset=\"UTF-i\"");
+//        httppost.setRequestEntity(null);
+//
+//        System.out.println(response.getStatusLine());
+//        if (resEntity != null) {
+//            System.out.println(EntityUtils.toString(resEntity));
+//        }
+//        if (resEntity != null) {
+//            resEntity.consumeContent();
+//        }
+//
+//        httpclient.getConnectionManager().shutdown();
+//
+//        return true;
+//    }
     @Override
     public Boolean insert(String key, String value) {
         Map<String, String> parameters = new HashMap<String, String>();
@@ -133,8 +153,11 @@ public class JavaDelegator implements AppInterface {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("key", key);
 
-        String result = (String) rpc("find", parameters).value;
-        return result;
+        Object result = rpc("find", parameters).value;
+        if (result instanceof Boolean) {
+            return null;
+        }
+        return (String) result;
     }
 
     @Override

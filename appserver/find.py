@@ -24,7 +24,8 @@ class Find(webapp2.RequestHandler):
     data_file = query.get()
 
     if data_file:
-      blob_reader = blobstore.BlobReader(data_file.f_value)
-      write_string(self, blob_reader.read())
+      blob_reader = blobstore.BlobReader(data_file.f_value, buffer_size=1048576)
+      for line in blob_reader:
+        write_string(self, line)
     else:
       write_boolean(self, False)
